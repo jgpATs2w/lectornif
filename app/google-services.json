@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "997142737452",
+    "firebase_url": "https://lectornif.firebaseio.com",
+    "project_id": "lectornif",
+    "storage_bucket": "lectornif.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:997142737452:android:2bfce65c51b20962",
+        "android_client_info": {
+          "package_name": "c.haicku.lectornif"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "997142737452-970k62dh533uhhhsjjua8h90ghbhht84.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDT4XN0NR1vvvdytdkaKB5WlKEZeSrN0dw"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
