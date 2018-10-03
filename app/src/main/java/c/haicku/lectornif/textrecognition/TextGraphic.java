@@ -53,7 +53,6 @@ public class TextGraphic extends GraphicOverlay.Graphic {
     postInvalidate();
   }
 
-  /** Draws the text block annotations for position, size, and raw value on the supplied canvas. */
   @Override
   public void draw(Canvas canvas) {
     if (text == null) {

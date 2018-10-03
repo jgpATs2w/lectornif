@@ -28,6 +28,7 @@ import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.ToggleButton;
 
 import com.google.android.gms.common.annotation.KeepName;
@@ -46,17 +47,14 @@ import java.util.List;
  * set up continuous frame processing on frames from a camera source. */
 @KeepName
 public final class LivePreviewActivity extends AppCompatActivity
-    implements OnRequestPermissionsResultCallback,
-        OnItemSelectedListener,
-        CompoundButton.OnCheckedChangeListener {
-  private static final String TEXT_DETECTION = "Text Detection";
+    implements OnRequestPermissionsResultCallback {
   private static final String TAG = "LivePreviewActivity";
   private static final int PERMISSION_REQUESTS = 1;
 
   private CameraSource cameraSource = null;
   private CameraSourcePreview preview;
   private GraphicOverlay graphicOverlay;
-  private String selectedModel = TEXT_DETECTION;
+  private TextView textView;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -74,49 +72,16 @@ public final class LivePreviewActivity extends AppCompatActivity
       Log.d(TAG, "graphicOverlay is null");
     }
 
+    textView = findViewById(R.id.text);
+
     if (allPermissionsGranted()) {
-      createCameraSource(selectedModel);
+      createCameraSource();
     } else {
       getRuntimePermissions();
     }
   }
 
-  @Override
-  public synchronized void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
-    // An item was selected. You can retrieve the selected item using
-    // parent.getItemAtPosition(pos)
-    selectedModel = parent.getItemAtPosition(pos).toString();
-    Log.d(TAG, "Selected model: " + selectedModel);
-    preview.stop();
-    if (allPermissionsGranted()) {
-      createCameraSource(selectedModel);
-      startCameraSource();
-    } else {
-      getRuntimePermissions();
-    }
-  }
-
-  @Override
-  public void onNothingSelected(AdapterView<?> parent) {
-    // Do nothing.
-  }
-
-  @Override
-  public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-    Log.d(TAG, "Set facing");
-    if (cameraSource != null) {
-      if (isChecked) {
-        cameraSource.setFacing(CameraSource.CAMERA_FACING_FRONT);
-      } else {
-        cameraSource.setFacing(CameraSource.CAMERA_FACING_BACK);
-      }
-    }
-    preview.stop();
-    startCameraSource();
-  }
-
-  private void createCameraSource(String model) {
-    // If there's no existing cameraSource, create one.
+  private void createCameraSource() {
     if (cameraSource == null) {
       cameraSource = new CameraSource(this, graphicOverlay);
     }
@@ -218,7 +183,7 @@ public final class LivePreviewActivity extends AppCompatActivity
           int requestCode, String[] permissions, int[] grantResults) {
     Log.i(TAG, "Permission granted!");
     if (allPermissionsGranted()) {
-      createCameraSource(selectedModel);
+      createCameraSource();
     }
     super.onRequestPermissionsResult(requestCode, permissions, grantResults);
   }
