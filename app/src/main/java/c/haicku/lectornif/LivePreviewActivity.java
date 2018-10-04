@@ -13,10 +13,13 @@
 // limitations under the License.
 package c.haicku.lectornif;
 
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityCompat.OnRequestPermissionsResultCallback;
 import android.support.v4.content.ContextCompat;
@@ -26,6 +29,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -55,6 +59,8 @@ public final class LivePreviewActivity extends AppCompatActivity
   private CameraSourcePreview preview;
   private GraphicOverlay graphicOverlay;
   private TextView textView;
+  private Button resetButton;
+  private DniViewModel dniViewModel;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -73,6 +79,24 @@ public final class LivePreviewActivity extends AppCompatActivity
     }
 
     textView = findViewById(R.id.text);
+    textView.setText( "leyendo..." );
+
+    dniViewModel = ViewModelProviders.of(this).get(DniViewModel.class);
+      final Observer<String> nObserver = new Observer<String>() {
+          @Override
+          public void onChanged(@Nullable final String newName) {
+            textView.setText(newName);
+          }
+      };
+    dniViewModel.getDni$().observe(this, nObserver);
+
+    resetButton = findViewById(R.id.button);
+    resetButton.setOnClickListener(new View.OnClickListener(){
+      @Override
+      public void onClick(View view) {
+        textView.setText("leyendo...");
+      }
+    });
 
     if (allPermissionsGranted()) {
       createCameraSource();
@@ -87,7 +111,7 @@ public final class LivePreviewActivity extends AppCompatActivity
     }
 
     try {
-      cameraSource.setMachineLearningFrameProcessor(new TextRecognitionProcessor());
+      cameraSource.setMachineLearningFrameProcessor(new TextRecognitionProcessor(dniViewModel));
     } catch (Exception e) {
       Log.e(TAG, "can not create camera source: " + e.getMessage());
       e.getStackTrace();

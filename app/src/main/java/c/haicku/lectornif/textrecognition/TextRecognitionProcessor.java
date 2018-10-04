@@ -22,6 +22,7 @@ import com.google.firebase.ml.vision.common.FirebaseVisionImage;
 import com.google.firebase.ml.vision.text.FirebaseVisionText;
 import com.google.firebase.ml.vision.text.FirebaseVisionTextRecognizer;
 
+import c.haicku.lectornif.DniViewModel;
 import c.haicku.lectornif.common.VisionProcessorBase;
 import c.haicku.lectornif.common.FrameMetadata;
 import c.haicku.lectornif.common.GraphicOverlay;
@@ -38,8 +39,12 @@ public class TextRecognitionProcessor extends VisionProcessorBase<FirebaseVision
 
   private final FirebaseVisionTextRecognizer detector;
 
-  public TextRecognitionProcessor() {
+  private DniViewModel dniViewModel;
+
+
+  public TextRecognitionProcessor(DniViewModel dniViewModel) {
     detector = FirebaseVision.getInstance().getOnDeviceTextRecognizer();
+    this.dniViewModel = dniViewModel;
   }
 
   @Override
@@ -62,7 +67,7 @@ public class TextRecognitionProcessor extends VisionProcessorBase<FirebaseVision
       @NonNull FrameMetadata frameMetadata,
       @NonNull GraphicOverlay graphicOverlay) {
 
-    dniProcessor.process(results.getTextBlocks());
+    dniProcessor.process(results.getTextBlocks(), dniViewModel, graphicOverlay);
 
   }
 

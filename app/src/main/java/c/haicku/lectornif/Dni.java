@@ -1,4 +1,4 @@
-package c.haicku.lectornif.textrecognition;
+package c.haicku.lectornif;
 
 public class Dni {
     String numero;
