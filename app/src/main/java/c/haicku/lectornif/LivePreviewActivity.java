@@ -17,6 +17,7 @@ import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityCompat.OnRequestPermissionsResultCallback;
 import android.support.v4.content.ContextCompat;
@@ -39,6 +40,7 @@ import c.haicku.lectornif.common.CameraSourcePreview;
 import c.haicku.lectornif.common.GraphicOverlay;
 import c.haicku.lectornif.textrecognition.TextRecognitionProcessor;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,11 +52,15 @@ public final class LivePreviewActivity extends AppCompatActivity
     implements OnRequestPermissionsResultCallback {
   private static final String TAG = "LivePreviewActivity";
   private static final int PERMISSION_REQUESTS = 1;
+  public static String TEST_FILE_NAME = "dnireads.dat";
+  public static boolean recordData = false;
 
   private CameraSource cameraSource = null;
   private CameraSourcePreview preview;
   private GraphicOverlay graphicOverlay;
   private TextView textView;
+  private File testFile;
+  private ToggleButton recordButton;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -74,11 +80,33 @@ public final class LivePreviewActivity extends AppCompatActivity
 
     textView = findViewById(R.id.text);
 
+    recordButton = findViewById(R.id.recordButton);
+    recordButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+      @Override
+      public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+        LivePreviewActivity.recordData = b;
+      }
+    });
+
+    if( isExternalStorageWritable()){
+      testFile = new File(
+              Environment.getExternalStoragePublicDirectory( Environment.DIRECTORY_DOWNLOADS ),
+              TEST_FILE_NAME);
+    }
+
     if (allPermissionsGranted()) {
       createCameraSource();
     } else {
       getRuntimePermissions();
     }
+  }
+
+  public boolean isExternalStorageWritable() {
+    String state = Environment.getExternalStorageState();
+    if (Environment.MEDIA_MOUNTED.equals(state)) {
+      return true;
+    }
+    return false;
   }
 
   private void createCameraSource() {
@@ -87,7 +115,7 @@ public final class LivePreviewActivity extends AppCompatActivity
     }
 
     try {
-      cameraSource.setMachineLearningFrameProcessor(new TextRecognitionProcessor());
+      cameraSource.setMachineLearningFrameProcessor(new TextRecognitionProcessor(textView, testFile));
     } catch (Exception e) {
       Log.e(TAG, "can not create camera source: " + e.getMessage());
       e.getStackTrace();

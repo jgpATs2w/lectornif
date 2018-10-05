@@ -15,6 +15,7 @@ package c.haicku.lectornif.textrecognition;
 
 import android.support.annotation.NonNull;
 import android.util.Log;
+import android.widget.TextView;
 
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.ml.vision.FirebaseVision;
@@ -26,6 +27,7 @@ import c.haicku.lectornif.common.VisionProcessorBase;
 import c.haicku.lectornif.common.FrameMetadata;
 import c.haicku.lectornif.common.GraphicOverlay;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
@@ -34,12 +36,17 @@ public class TextRecognitionProcessor extends VisionProcessorBase<FirebaseVision
 
   private static final String TAG = "TextRecProc";
 
-  private DniProcessor dniProcessor = new DniProcessor();
+  private DniProcessor dniProcessor;
 
   private final FirebaseVisionTextRecognizer detector;
+  private TextView textView;
+  private File testFile;
 
-  public TextRecognitionProcessor() {
+  public TextRecognitionProcessor(TextView textView, File testFile) {
     detector = FirebaseVision.getInstance().getOnDeviceTextRecognizer();
+    dniProcessor  = new DniProcessor(testFile);
+    this.textView = textView;
+    this.testFile = testFile;
   }
 
   @Override
@@ -62,7 +69,10 @@ public class TextRecognitionProcessor extends VisionProcessorBase<FirebaseVision
       @NonNull FrameMetadata frameMetadata,
       @NonNull GraphicOverlay graphicOverlay) {
 
-    dniProcessor.process(results.getTextBlocks());
+    Dni dni = dniProcessor.process(results.getTextBlocks());
+
+    if(dni != null && dni.numero != null)
+      textView.setText(dni.numero);
 
   }
 
