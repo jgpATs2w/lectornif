@@ -3,7 +3,6 @@ package c.haicku.lectornif;
 import org.junit.Test;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -22,7 +21,7 @@ public class DniReadUnitTest{
     @Test
     public void testReadsFile()  throws IOException {
         String[] dnisValid = {"50201633Q", "05304117H", "01187714V", "53409289T", "50849680S"};
-        InputStream input = getClass().getClassLoader().getResourceAsStream("dnireads.dat");
+        InputStream input = getClass().getClassLoader().getResourceAsStream("dnireads_lite.dat");
         long tic = System.currentTimeMillis();
         assertNotNull(input);
 
@@ -30,7 +29,7 @@ public class DniReadUnitTest{
 
         DniProcessor dniProcessor = new DniProcessor();
         String dni;
-        String[] nombreApellidos;
+        String nombreApellidos;
         String line = null;
         int nReads = 0;
         int nDniFound = 0;
@@ -49,9 +48,8 @@ public class DniReadUnitTest{
                 nDniFound++;
             }
             nombreApellidos = dniProcessor.findNombreApellidos(line);
-            if( nombreApellidos[0] != null ){
-                System.out.println("Nombre: "+nombreApellidos[0] );
-                System.out.println("Apellidos: "+nombreApellidos[1] + " found in "+line);
+            if( nombreApellidos != null ){
+                System.out.println("Nombre: "+nombreApellidos );
                 nNombreFound++;
             }
 

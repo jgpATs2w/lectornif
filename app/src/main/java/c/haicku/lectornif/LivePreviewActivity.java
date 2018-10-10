@@ -38,6 +38,7 @@ import com.google.firebase.ml.common.FirebaseMLException;
 import c.haicku.lectornif.common.CameraSource;
 import c.haicku.lectornif.common.CameraSourcePreview;
 import c.haicku.lectornif.common.GraphicOverlay;
+import c.haicku.lectornif.facedetection.FaceDetectionProcessor;
 import c.haicku.lectornif.textrecognition.TextRecognitionProcessor;
 
 import java.io.File;
@@ -116,6 +117,7 @@ public final class LivePreviewActivity extends AppCompatActivity
 
     try {
       cameraSource.setMachineLearningFrameProcessor(new TextRecognitionProcessor(textView, testFile));
+      //cameraSource.setMachineLearningFrameProcessor(new FaceDetectionProcessor());
     } catch (Exception e) {
       Log.e(TAG, "can not create camera source: " + e.getMessage());
       e.getStackTrace();

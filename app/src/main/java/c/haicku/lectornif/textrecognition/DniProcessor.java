@@ -1,5 +1,6 @@
 package c.haicku.lectornif.textrecognition;
 
+import android.graphics.Rect;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
@@ -65,10 +66,28 @@ public class DniProcessor {
                                 fileWriter.write("########################"+NEW_LINE);
                         Log.d(TAG, "#########################");
                     }
-                    String text = lines.get(j).getText();
+                    FirebaseVisionText.Line line = lines.get(j);
+                    String text = line.getText();
+                    float confidence = 0;
+                    int top = 0;
+                    int bottom = 0;
+                    int left = 0;
+                    int right = 0;
+                    try{
+                        confidence = line.getConfidence();
+                        top = line.getBoundingBox().top;
+                        bottom = line.getBoundingBox().bottom;
+                        left = line.getBoundingBox().left;
+                        right = line.getBoundingBox().right;
+                    }catch(NullPointerException e){
+                        e.printStackTrace();
+                    }
+
+
                     Log.d(TAG, text);
                     if(LivePreviewActivity.recordData)
-                        fileWriter.write(text+NEW_LINE);
+                        fileWriter.write(text+","+
+                                confidence + ","+top +","+bottom +","+left +","+right +NEW_LINE);
 
                     dni.numero = findDNI(text);
                 }
