@@ -37,6 +37,7 @@ public class CameraSourcePreview extends ViewGroup {
   private CameraSource cameraSource;
 
   private GraphicOverlay overlay;
+  private CameraPreviewRectangleOverlay rectangleOverlay;
 
   public CameraSourcePreview(Context context, AttributeSet attrs) {
     super(context, attrs);
@@ -62,8 +63,9 @@ public class CameraSourcePreview extends ViewGroup {
     }
   }
 
-  public void start(CameraSource cameraSource, GraphicOverlay overlay) throws IOException {
+  public void start(CameraSource cameraSource, GraphicOverlay overlay, CameraPreviewRectangleOverlay rectangleOverlay) throws IOException {
     this.overlay = overlay;
+    this.rectangleOverlay = rectangleOverlay;
     start(cameraSource);
   }
 

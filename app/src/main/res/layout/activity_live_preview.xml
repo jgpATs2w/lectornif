@@ -15,6 +15,13 @@
       android:layout_height="wrap_content"
       android:layout_alignParentStart="true"
       android:layout_alignParentTop="true">
+      <c.haicku.lectornif.common.CameraPreviewRectangleOverlay
+          android:id="@+id/cameraPreviewRectangleOverlay"
+          android:layout_width="match_parent"
+          android:layout_height="match_parent"
+          android:layout_alignParentStart="true"
+          android:layout_alignParentTop="true"
+          android:layout_alignParentBottom="true"/>
 
       <c.haicku.lectornif.common.GraphicOverlay
           android:id="@+id/fireFaceOverlay"
@@ -31,20 +38,20 @@
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_alignParentBottom="true"
-        android:layout_marginBottom="40dp"
+        android:layout_marginBottom="32dp"
         android:paddingLeft="80dp"
         android:textColor="#FFF"
         android:textSize="20sp"
         android:textStyle="bold" />
 
-    <Button
-        android:id="@+id/button"
+    <ToggleButton
+        android:id="@+id/recordButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentBottom="true"
-        android:layout_marginStart="289dp"
-        android:layout_marginBottom="32dp"
-        android:text="Resetear" />
+        android:layout_alignTop="@+id/text"
+        android:layout_alignParentEnd="true"
+        android:text="ToggleButton"
+        android:textOff="Grabar"
+        android:textOn="Stop" />
 
 </RelativeLayout>

@@ -13,8 +13,10 @@
 // limitations under the License.
 package c.haicku.lectornif.textrecognition;
 
+import android.graphics.Rect;
 import android.support.annotation.NonNull;
 import android.util.Log;
+import android.widget.TextView;
 
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.ml.vision.FirebaseVision;
@@ -22,11 +24,14 @@ import com.google.firebase.ml.vision.common.FirebaseVisionImage;
 import com.google.firebase.ml.vision.text.FirebaseVisionText;
 import com.google.firebase.ml.vision.text.FirebaseVisionTextRecognizer;
 
+import c.haicku.lectornif.Dni;
 import c.haicku.lectornif.DniViewModel;
+import c.haicku.lectornif.common.CameraPreviewRectangleOverlay;
 import c.haicku.lectornif.common.VisionProcessorBase;
 import c.haicku.lectornif.common.FrameMetadata;
 import c.haicku.lectornif.common.GraphicOverlay;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
@@ -35,16 +40,19 @@ public class TextRecognitionProcessor extends VisionProcessorBase<FirebaseVision
 
   private static final String TAG = "TextRecProc";
 
-  private DniProcessor dniProcessor = new DniProcessor();
+  private DniProcessor dniProcessor;
 
   private final FirebaseVisionTextRecognizer detector;
+  private TextView textView;
+  private File testFile;
+  private CameraPreviewRectangleOverlay rectangleOverlay;
 
-  private DniViewModel dniViewModel;
-
-
-  public TextRecognitionProcessor(DniViewModel dniViewModel) {
+  public TextRecognitionProcessor(TextView textView, File testFile, CameraPreviewRectangleOverlay rectangleOverlay) {
     detector = FirebaseVision.getInstance().getOnDeviceTextRecognizer();
-    this.dniViewModel = dniViewModel;
+    dniProcessor  = new DniProcessor(testFile);
+    this.rectangleOverlay = rectangleOverlay;
+    this.textView = textView;
+    this.testFile = testFile;
   }
 
   @Override
@@ -66,8 +74,38 @@ public class TextRecognitionProcessor extends VisionProcessorBase<FirebaseVision
       @NonNull FirebaseVisionText results,
       @NonNull FrameMetadata frameMetadata,
       @NonNull GraphicOverlay graphicOverlay) {
+    graphicOverlay.clear();
+    List<FirebaseVisionText.TextBlock> blocks = results.getTextBlocks();
+    boolean firstRead = true;
 
-    dniProcessor.process(results.getTextBlocks(), dniViewModel, graphicOverlay);
+    for (int i = 0; i < blocks.size(); i++) {
+      List<FirebaseVisionText.Line> lines = blocks.get(i).getLines();
+      for (int j = 0; j < lines.size(); j++) {
+        FirebaseVisionText.Line line = lines.get(j);
+        Rect lineRect = line.getBoundingBox();
+        float[] referenceCorners = rectangleOverlay.getRectangleCorners();
+        if(lineRect.top < referenceCorners[0] || lineRect.bottom > referenceCorners[2])
+          continue;
+
+        if(firstRead){
+          dniProcessor.startReads(referenceCorners);
+          firstRead = false;
+        }
+        Dni dni = dniProcessor.process( line);
+
+        if(dni != null && dni.getNumero() != null)
+          textView.setText(dni.getNumero());
+
+        List<FirebaseVisionText.Element> elements = lines.get(j).getElements();
+        for (int k = 0; k < elements.size(); k++) {
+          GraphicOverlay.Graphic textGraphic = new TextGraphic(graphicOverlay, elements.get(k));
+          graphicOverlay.add(textGraphic);
+        }
+      }
+
+      dniProcessor.endReads();
+    }
+
 
   }
 

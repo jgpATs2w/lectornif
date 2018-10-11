@@ -20,6 +20,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityCompat.OnRequestPermissionsResultCallback;
 import android.support.v4.content.ContextCompat;
@@ -38,29 +39,34 @@ import android.widget.ToggleButton;
 import com.google.android.gms.common.annotation.KeepName;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.ml.common.FirebaseMLException;
+
+import c.haicku.lectornif.common.CameraPreviewRectangleOverlay;
 import c.haicku.lectornif.common.CameraSource;
 import c.haicku.lectornif.common.CameraSourcePreview;
 import c.haicku.lectornif.common.GraphicOverlay;
+import c.haicku.lectornif.facedetection.FaceDetectionProcessor;
 import c.haicku.lectornif.textrecognition.TextRecognitionProcessor;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Demo app showing the various features of ML Kit for Firebase. This class is used to
- * set up continuous frame processing on frames from a camera source. */
 @KeepName
 public final class LivePreviewActivity extends AppCompatActivity
     implements OnRequestPermissionsResultCallback {
   private static final String TAG = "LivePreviewActivity";
   private static final int PERMISSION_REQUESTS = 1;
+  public static String TEST_FILE_NAME = "dnireads.dat";
+  public static boolean recordData = false;
 
   private CameraSource cameraSource = null;
   private CameraSourcePreview preview;
   private GraphicOverlay graphicOverlay;
+  private CameraPreviewRectangleOverlay rectangleOverlay;
   private TextView textView;
-  private Button resetButton;
-  private DniViewModel dniViewModel;
+  private File testFile;
+  private ToggleButton recordButton;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -69,34 +75,26 @@ public final class LivePreviewActivity extends AppCompatActivity
 
     setContentView(R.layout.activity_live_preview);
 
-    preview = (CameraSourcePreview) findViewById(R.id.firePreview);
-    if (preview == null) {
-      Log.d(TAG, "Preview is null");
-    }
-    graphicOverlay = (GraphicOverlay) findViewById(R.id.fireFaceOverlay);
-    if (graphicOverlay == null) {
-      Log.d(TAG, "graphicOverlay is null");
-    }
+    preview = findViewById(R.id.firePreview);
+    graphicOverlay = findViewById(R.id.fireFaceOverlay);
+    rectangleOverlay = findViewById(R.id.cameraPreviewRectangleOverlay);
 
     textView = findViewById(R.id.text);
     textView.setText( "leyendo..." );
 
-    dniViewModel = ViewModelProviders.of(this).get(DniViewModel.class);
-      final Observer<String> nObserver = new Observer<String>() {
-          @Override
-          public void onChanged(@Nullable final String newName) {
-            textView.setText(newName);
-          }
-      };
-    dniViewModel.getDni$().observe(this, nObserver);
-
-    resetButton = findViewById(R.id.button);
-    resetButton.setOnClickListener(new View.OnClickListener(){
+    recordButton = findViewById(R.id.recordButton);
+    recordButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
       @Override
-      public void onClick(View view) {
-        textView.setText("leyendo...");
+      public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+        LivePreviewActivity.recordData = b;
       }
     });
+
+    if( isExternalStorageWritable()){
+      testFile = new File(
+              Environment.getExternalStoragePublicDirectory( Environment.DIRECTORY_DOWNLOADS ),
+              TEST_FILE_NAME);
+    }
 
     if (allPermissionsGranted()) {
       createCameraSource();
@@ -105,13 +103,23 @@ public final class LivePreviewActivity extends AppCompatActivity
     }
   }
 
+  public boolean isExternalStorageWritable() {
+    String state = Environment.getExternalStorageState();
+    if (Environment.MEDIA_MOUNTED.equals(state)) {
+      return true;
+    }
+    return false;
+  }
+
   private void createCameraSource() {
     if (cameraSource == null) {
       cameraSource = new CameraSource(this, graphicOverlay);
     }
 
     try {
-      cameraSource.setMachineLearningFrameProcessor(new TextRecognitionProcessor(dniViewModel));
+      cameraSource.setMachineLearningFrameProcessor(new TextRecognitionProcessor(textView, testFile, rectangleOverlay));
+      //cameraSource.setMachineLearningFrameProcessor(new FaceDetectionProcessor());
+
     } catch (Exception e) {
       Log.e(TAG, "can not create camera source: " + e.getMessage());
       e.getStackTrace();
@@ -132,7 +140,7 @@ public final class LivePreviewActivity extends AppCompatActivity
         if (graphicOverlay == null) {
           Log.d(TAG, "resume: graphOverlay is null");
         }
-        preview.start(cameraSource, graphicOverlay);
+        preview.start(cameraSource, graphicOverlay, rectangleOverlay);
       } catch (IOException e) {
         Log.e(TAG, "Unable to start camera source.", e);
         cameraSource.release();
